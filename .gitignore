@@ -52,7 +52,6 @@ fabric.properties
 # Editor-based Rest Client
 .idea/httpRequests
 
-.gitignore
 .idea/SimCirJs.iml
 .idea/inspectionProfiles/
 .idea/misc.xml
