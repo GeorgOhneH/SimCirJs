@@ -1,6 +1,5 @@
 import json
 from copy import deepcopy
-from collections import deque
 
 
 def get_json():
@@ -62,10 +61,48 @@ def cord_sort(dict):
     return x + y
 
 
+def get_value(name, history):
+    if name in list(history.keys()):
+        return history[name]
+    if name not in blue_prints_names:
+        return 1
+    blue_print = blue_prints[name]
+    total = 0
+    for dev in blue_print['devices']:
+        total += get_value(dev['type'], history)
+    history[name] = total
+    return total
+
+
+history = {}
 m = [0]
 blue_prints = get_json()
-blue_prints_names = blue_prints.keys()
+blue_prints_names = list(blue_prints.keys())
 data = get_data()
+t = 0
+for dev in data['devices']:
+    t += get_value(dev['type'], history)
+
+factor = 1 / 10
+print(history)
+for blue_print in blue_prints.values():
+    try:
+        value = len(blue_print['devices'])
+    except KeyError:
+        value = 1
+    blue_print['width'] = int(blue_print['width'] * factor * value)
+    blue_print['height'] = int(blue_print['height'] * factor * value)
+    for dev in blue_print['devices']:
+        dev['x'] = int(dev['x'] * factor * value)
+        dev['y'] = int(dev['y'] * factor * value)
+
+value = len(data['devices'])
+data['width'] = int(data['width'] * factor * value / 2)
+data['height'] = int(data['height'] * factor * value / 2)
+for dev in data['devices']:
+    dev['x'] = int(dev['x'] * factor * value / 2)
+    dev['y'] = int(dev['y'] * factor * value / 2)
+
 finished = False
 while not finished:
     for device in data['devices']:
@@ -136,10 +173,11 @@ while not finished:
             # Parent Modifications
             data['devices'].remove(device)
             for parent_device in data['devices']:
-                if parent_device['x'] + 64 >= device['x'] and device['y'] + dev_height + 64 >= parent_device['y'] >= device['y'] + dev_small_height-1:
+
+                if parent_device['x'] + 65 >= device['x'] and device['y'] + dev_height + 65 >= parent_device['y'] >= device['y'] + dev_small_height-1:
                     parent_device['y'] += dev_height
 
-                if parent_device['y'] + 64 >= device['y'] and device['x'] + dev_width + 64 >= parent_device['x'] >= device['x'] + 63:
+                if parent_device['y'] + 65 >= device['y'] and device['x'] + dev_width + 65 >= parent_device['x'] >= device['x'] + 63:
                     parent_device['x'] += dev_width
 
             dev_id = device['id']
