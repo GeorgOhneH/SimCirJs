@@ -122,23 +122,23 @@ for dev in data['devices']:
 factor = 1 / 10
 sorted_history = sorted(history.items(), key=operator.itemgetter(1))
 sorted_history.append((data, -1))
-# for blue_print in blue_prints.values():
-#     try:
-#         value = len(blue_print['devices'])
-#     except KeyError:
-#         value = 1
-#     blue_print['width'] = int(blue_print['width'] * factor * value)
-#     blue_print['height'] = int(blue_print['height'] * factor * value)
-#     for dev in blue_print['devices']:
-#         dev['x'] = int(dev['x'] * factor * value)
-#         dev['y'] = int(dev['y'] * factor * value)
-#
-# value = len(data['devices'])
-# data['width'] = int(data['width'] * factor * value / 2)
-# data['height'] = int(data['height'] * factor * value / 2)
-# for dev in data['devices']:
-#     dev['x'] = int(dev['x'] * factor * value / 2)
-#     dev['y'] = int(dev['y'] * factor * value / 2)
+for blue_print in blue_prints.values():
+    try:
+        value = len(blue_print['devices'])
+    except KeyError:
+        value = 1
+    blue_print['width'] = int(blue_print['width'] * factor * value)
+    blue_print['height'] = int(blue_print['height'] * factor * value)
+    for dev in blue_print['devices']:
+        dev['x'] = int(dev['x'] * factor * value)
+        dev['y'] = int(dev['y'] * factor * value)
+
+value = len(data['devices'])
+data['width'] = int(data['width'] * factor * value / 2)
+data['height'] = int(data['height'] * factor * value / 2)
+for dev in data['devices']:
+    dev['x'] = int(dev['x'] * factor * value / 2)
+    dev['y'] = int(dev['y'] * factor * value / 2)
 
 for name, k in sorted_history:
     if k >= 0:
@@ -221,7 +221,7 @@ for name, k in sorted_history:
                         parent_device['y'] += dev_height
                     # device['x'] + dev_width + 65 >=
                     if parent_device['y'] >= device['y'] and device['x'] + dev_width >= parent_device['x'] >= device['x'] + 63:
-                        parent_device['x'] += dev_width // 2
+                        parent_device['x'] += dev_width
 
                 dev_id = device['id']
                 for con in data['connectors']:
@@ -250,6 +250,35 @@ for name, k in sorted_history:
                 finished = False
                 break
 
+    cords_x = [0]
+    cords_y = [0]
+    for dev in data['devices']:
+        # if dev['type'] != 'Joint' and dev['type'] != 'In' and dev['type'] != 'Out':
+        cords_x.append(dev['x'])
+        cords_y.append(dev['y'])
+    cords_x.sort()
+    cords_y.sort()
+    sm_x = []
+    for cord_last, cords_new in zip(cords_x[:-1], cords_x[1:]):
+        if cords_new - cord_last > 42:
+            sm_x.append((cords_new-1, cords_new-cord_last-42))
+    sm_y = []
+    for cord_last, cords_new in zip(cords_y[:-1], cords_y[1:]):
+        if cords_new - cord_last > 42:
+            sm_y.append((cords_new-1, cords_new-cord_last-42))
+
+    for dev in data['devices']:
+        total = 0
+        for m_x in sm_x:
+            if dev['x'] >= m_x[0]:
+                total += m_x[1]
+        dev['x'] -= total
+        total = 0
+        for m_y in sm_y:
+            if dev['y'] >= m_y[0]:
+                total += m_y[1]
+        dev['y'] -= total
+
     max_x, max_y = float('-inf'), float('-inf')
     for device in data['devices']:
         if device['x'] > max_x:
@@ -259,8 +288,11 @@ for name, k in sorted_history:
             max_y = device['y']
     data['width'] = max_x + 150
     data['height'] = max_y + 64
+
     if k >= 0:
         blue_prints[name] = deepcopy(data)
+        if name == '':
+            print(json.dumps(data))
     else:
         pass
 
