@@ -297,7 +297,9 @@ for name, k in sorted_history:
         pass
 
 total_dev = len([x for x in data['devices'] if x['type'] != 'Joint'])
+total_joints = len([x for x in data['devices'] if x['type'] == 'Joint'])
+print(total_joints)
 
-print(total_dev, len(data['connectors']))
+print(total_dev, len(data['connectors']) - total_joints)
 
 print(json.dumps(data))
